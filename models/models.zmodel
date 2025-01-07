@@ -1,0 +1,148 @@
+enum UserStatus {
+    INVITED
+    VERIFIED
+}
+
+model User {
+    id              String     @id @default(uuid())
+    name            String?
+    email           String?    @unique
+    pictureUrl      String?    @default('https://i.imgur.com/ZdJSK3Y.jpeg')
+    tokenInvitation String?
+
+    status          UserStatus @default(VERIFIED)
+
+    // this is the role of the user for the application
+    globalRole      String     @default('USER')
+    password        String?    @password @omit
+    createdAt       DateTime   @default(now())
+    updatedAt       DateTime   @updatedAt @default(now())
+
+    inquirys        Inquiry[]  @relation("user")
+
+    @@auth()
+    @@allow("all", auth().id == this.id)
+    @@allow('all', auth().globalRole == 'ADMIN')
+
+    //we only allow that user to register if they don't create an admin role
+    @@allow("create", globalRole != 'ADMIN')
+    @@allow("read", true)
+}
+
+model Category {
+
+    id          String    @id @default(uuid())
+    name        String?
+    description String?
+
+    products    Product[] @relation("category")
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Product {
+
+    id             String    @id @default(uuid())
+    name           String?
+    description    String?
+    specifications String?
+    price          String?
+    imageUrl       String?
+
+    categoryId     String?
+    category       Category? @relation(fields: [categoryId], references: [id], name: "category")
+
+    inquirys       Inquiry[] @relation("product")
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Service {
+
+    id             String    @id @default(uuid())
+    name           String?
+    description    String?
+    processDetails String?
+    imageUrl       String?
+
+    inquirys       Inquiry[] @relation("service")
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Inquiry {
+
+    id        String   @id @default(uuid())
+    type      String?
+    message   String?
+    status    String?
+
+    userId    String?
+    user      User?    @relation(fields: [userId], references: [id], name: "user")
+    productId String?
+    product   Product? @relation(fields: [productId], references: [id], name: "product")
+    serviceId String?
+    service   Service? @relation(fields: [serviceId], references: [id], name: "service")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Partner {
+
+    id          String   @id @default(uuid())
+    name        String?
+    logo        String?
+    description String?
+    website     String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Certification {
+
+    id          String   @id @default(uuid())
+    name        String?
+    description String?
+    issueDate   String?
+    validUntil  String?
+    imageUrl    String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Contact {
+
+    id             String   @id @default(uuid())
+    address        String?
+    phone          String?
+    email          String?
+    mapCoordinates String?
+
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Facility {
+
+    id           String   @id @default(uuid())
+    name         String?
+    description  String?
+    location     String?
+    capabilities String?
+    imageUrl     String?
+
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
